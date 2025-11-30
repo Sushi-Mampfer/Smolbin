@@ -9,7 +9,7 @@ use leptos_router::{
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
         <!DOCTYPE html>
-        <html lang="en">
+        <html class="w-full h-full" lang="en">
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,7 +18,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <Stylesheet id="leptos" href="/pkg/bin.css" />
                 <MetaTags />
             </head>
-            <body>
+            <body class="w-full h-full">
                 <App />
             </body>
         </html>
@@ -32,7 +32,7 @@ pub fn App() -> impl IntoView {
     view! {
         <Title text="SmolBin" />
         <Router>
-            <main>
+            <main class="w-full h-full bg-gray-800 p-8">
                 <Routes fallback=|| "Page not found.".into_view()>
                     <Route path=StaticSegment("") view=HomePage />
                     <Route path=path!("/paste/:id") view=PastePage />

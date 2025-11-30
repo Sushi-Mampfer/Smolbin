@@ -10,7 +10,7 @@ pub async fn get_paste(id: String) -> Result<Option<Paste>, ServerFnError> {
     use sqlx::Row;
 
     let state = expect_context::<crate::datatypes::AppState>();
-    let Some(paste) = sqlx::query(
+    let Some(paste) = (match sqlx::query(
         r#"
             SELECT * FROM pastes
             WHERE id = ?
@@ -18,11 +18,13 @@ pub async fn get_paste(id: String) -> Result<Option<Paste>, ServerFnError> {
     )
     .bind(&id)
     .fetch_optional(&state.pool)
-    .await
-    .unwrap() else {
+    .await {
+        Ok(r) => r,
+        Err(e) => return Err(ServerFnError::ServerError(format!("Databese error: {}", e))),
+    }) else {
         return Ok(None);
     };
-    if paste.get::<i32, &str>("expiry") == -1 {
+    if paste.get::<i32, &str>("expiery") == -1 {
         let _ = sqlx::query(
             r#"
             DELETE FROM pastes
@@ -48,7 +50,7 @@ pub async fn create_paste(
     content: String,
     paste_type: PasteType,
     expiery: i32,
-) -> Result<(), ServerFnError> {
+) -> Result<String, ServerFnError> {
     use rand::distr::SampleString;
 
     let state = expect_context::<crate::datatypes::AppState>();
@@ -56,18 +58,18 @@ pub async fn create_paste(
         let id = rand::distr::Alphanumeric.sample_string(&mut rand::rng(), 8);
         match sqlx::query(
             r#"
-            INSERT INTO pastes (id, content, expiry, type)
+            INSERT INTO pastes (id, content, expiery, type)
             VALUES (?, ?, ?, ?)
         "#,
         )
-        .bind(id)
+        .bind(&id)
         .bind(&content)
         .bind(expiery)
         .bind(paste_type.clone() as u8)
         .execute(&state.pool)
         .await
         {
-            Ok(_) => return Ok(()),
+            Ok(_) => return Ok(id),
             Err(_) => continue,
         }
     }
