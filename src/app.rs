@@ -30,9 +30,9 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Title text="SmolBin" />
+        <Title text="Smolbin" />
         <Router>
-            <main class="w-full h-full bg-gray-800 p-8">
+            <main class="w-full h-full bg-gray-800 p-8 font-[helvetica]">
                 <Routes fallback=|| "Page not found.".into_view()>
                     <Route path=StaticSegment("") view=HomePage />
                     <Route path=path!("/paste/:id") view=PastePage />

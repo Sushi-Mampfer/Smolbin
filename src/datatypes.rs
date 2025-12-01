@@ -15,11 +15,11 @@ pub struct Paste {
     pub paste_type: PasteType,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum PasteType {
     Text = 0,
     Url,
-    File,
 }
 
 impl From<u8> for PasteType {
@@ -27,7 +27,6 @@ impl From<u8> for PasteType {
         match int {
             0 => Self::Text,
             1 => Self::Url,
-            2 => Self::File,
             _ => panic!("Invalid paste type!"),
         }
     }

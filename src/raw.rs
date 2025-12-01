@@ -19,7 +19,7 @@ pub async fn raw(Extension(state): Extension<AppState>, Path(id): Path<String>) 
     }) else {
         return "404, not found".into_response();
     };
-    if paste.get::<i32, &str>("expiery") == -1 {
+    if paste.get::<i32, &str>("expiry") == -1 {
         let _ = sqlx::query(
             r#"
             DELETE FROM pastes
@@ -39,6 +39,5 @@ pub async fn raw(Extension(state): Extension<AppState>, Path(id): Path<String>) 
     match paste.paste_type {
         crate::datatypes::PasteType::Text => paste.content.into_response(),
         crate::datatypes::PasteType::Url => Redirect::to(&paste.content).into_response(),
-        _ => "paste type not supported".into_response()
     }
 }

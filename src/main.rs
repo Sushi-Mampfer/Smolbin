@@ -33,7 +33,7 @@ async fn main() {
         CREATE TABLE IF NOT EXISTS pastes (
             id varchar(8) PRIMARY KEY,
             content TEXT NOT NULL,
-            expiery INT NOT NULL,
+            expiry INT NOT NULL,
             type INT NOT NULL
         )
     "#,
@@ -56,7 +56,7 @@ async fn main() {
             match query(
                 r#"
                 DELETE FROM pastes
-                WHERE expiery < ? AND expiery > 0
+                WHERE expiry < ? AND expiry > 0
             "#).bind(Utc::now().timestamp()).execute(&pool_pass).await  {
                     Ok(r) => {
                         let deleted = r.rows_affected();

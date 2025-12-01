@@ -1,5 +1,5 @@
 use leptos::{
-    prelude::{expect_context, ServerFnError},
+    prelude::ServerFnError,
     server,
 };
 
@@ -8,6 +8,7 @@ use crate::datatypes::{Paste, PasteType};
 #[server]
 pub async fn get_paste(id: String) -> Result<Option<Paste>, ServerFnError> {
     use sqlx::Row;
+    use leptos::prelude::expect_context;
 
     let state = expect_context::<crate::datatypes::AppState>();
     let Some(paste) = (match sqlx::query(
@@ -24,7 +25,7 @@ pub async fn get_paste(id: String) -> Result<Option<Paste>, ServerFnError> {
     }) else {
         return Ok(None);
     };
-    if paste.get::<i32, &str>("expiery") == -1 {
+    if paste.get::<i32, &str>("expiry") == -1 {
         let _ = sqlx::query(
             r#"
             DELETE FROM pastes
@@ -49,22 +50,28 @@ pub async fn get_paste(id: String) -> Result<Option<Paste>, ServerFnError> {
 pub async fn create_paste(
     content: String,
     paste_type: PasteType,
-    expiery: i32,
+    expiry: i32,
 ) -> Result<String, ServerFnError> {
+    if paste_type == PasteType::Url {
+        if !content.starts_with("http://") && !content.starts_with("https://") {
+            return Err(ServerFnError::ServerError("Invalid url".to_string()));
+        }
+    }
     use rand::distr::SampleString;
+    use leptos::prelude::expect_context;
 
     let state = expect_context::<crate::datatypes::AppState>();
     for _ in 0..100 {
         let id = rand::distr::Alphanumeric.sample_string(&mut rand::rng(), 8);
         match sqlx::query(
             r#"
-            INSERT INTO pastes (id, content, expiery, type)
+            INSERT INTO pastes (id, content, expiry, type)
             VALUES (?, ?, ?, ?)
         "#,
         )
         .bind(&id)
         .bind(&content)
-        .bind(expiery)
+        .bind(expiry)
         .bind(paste_type.clone() as u8)
         .execute(&state.pool)
         .await
